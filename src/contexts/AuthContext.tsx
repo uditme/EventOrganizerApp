@@ -116,17 +116,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signInWithGoogle = useCallback(async () => {
     try {
+      console.log('🔄 Starting Google sign-in...');
       setLoading(true);
+      
+      // Check if Firebase is properly configured
+      if (!auth || !googleProvider) {
+        throw new Error('Firebase auth not properly configured');
+      }
+      
+      console.log('🔄 Opening Google popup...');
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
       
+      console.log('✅ Google sign-in successful:', user.email);
+      
       // Try to create/update user profile via backend API
       try {
+        console.log('🔄 Creating user profile via API...');
+        const token = await user.getIdToken();
+        
         const response = await fetch('/api/auth/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${await user.getIdToken()}`,
+            'Authorization': `Bearer ${token}`,
           },
           body: JSON.stringify({
             uid: user.uid,
@@ -138,9 +151,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         if (response.ok) {
           const profile = await response.json();
+          console.log('✅ User profile created via API:', profile.email);
           setUserProfile(profile);
           localStorage.setItem('userProfile', JSON.stringify(profile));
         } else {
+          const errorData = await response.text();
+          console.warn('⚠️ API failed, using fallback profile:', errorData);
+          
           // Fallback to local profile if API fails
           const tempProfile = {
             _id: user.uid,
@@ -155,8 +172,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           localStorage.setItem('userProfile', JSON.stringify(tempProfile));
           setUserProfile(tempProfile as unknown as IUser);
         }
-      } catch (error) {
-        console.error('Error with backend auth:', error);
+      } catch (apiError) {
+        console.warn('⚠️ API error, using fallback profile:', apiError);
         // Fallback to local profile
         const tempProfile = {
           _id: user.uid,
@@ -172,7 +189,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUserProfile(tempProfile as unknown as IUser);
       }
     } catch (error) {
-      console.error('Error signing in with Google:', error);
+      console.error('❌ Google sign-in error:', error);
+      
+      // Provide user-friendly error messages
+      if (error instanceof Error) {
+        if (error.message.includes('popup-closed-by-user')) {
+          console.log('ℹ️ User closed the popup');
+        } else if (error.message.includes('popup-blocked')) {
+          alert('Please allow popups for this site and try again.');
+        } else if (error.message.includes('network')) {
+          alert('Network error. Please check your connection and try again.');
+        } else {
+          alert('Sign-in failed. Please try again.');
+        }
+      }
+      
+      throw error; // Re-throw to let calling component handle it
     } finally {
       setLoading(false);
     }
