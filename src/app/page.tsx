@@ -17,7 +17,6 @@ import {
   X,
   CheckCircle,
   Star,
-  Globe,
   Zap
 } from 'lucide-react';
 

@@ -8,10 +8,8 @@ import {
   Star,
   Calendar,
   MapPin,
-  Users,
-  MessageSquare
+  Users
 } from 'lucide-react';
-
 interface Event {
   _id: string;
   name: string;
@@ -109,7 +107,7 @@ export default function AttendeeFeedbackPage() {
               <div className="text-center py-12">
                 <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <h4 className="text-lg font-medium text-gray-900 mb-2">No events to review</h4>
-                <p className="text-gray-600 mb-4">You haven't joined any events yet.</p>
+                <p className="text-gray-600 mb-4">You haven&apos;t joined any events yet.</p>
                 <button
                   onClick={() => router.push('/attendee/join')}
                   className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"

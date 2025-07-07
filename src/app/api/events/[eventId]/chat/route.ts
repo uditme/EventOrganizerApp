@@ -40,7 +40,7 @@ export async function GET(
     }
 
     // Check if user is attendee or organizer of this event
-    const isAttendee = event.attendees.some((attendee: any) => 
+    const isAttendee = event.attendees.some((attendee: { userId: string }) => 
       attendee.userId?.toString() === user._id.toString()
     );
     const isOrganizer = event.organizerId.toString() === user._id.toString();
@@ -55,7 +55,18 @@ export async function GET(
       .sort({ sentAt: 1 });
 
     // Format messages
-    const formattedMessages = messages.map((message: any) => ({
+    const formattedMessages = messages.map((message: {
+      _id: string;
+      content: string;
+      type: string;
+      senderName: string;
+      userId: { _id: string };
+      fileUrl?: string;
+      fileName?: string;
+      fileSize?: number;
+      mimeType?: string;
+      sentAt: Date;
+    }) => ({
       _id: message._id,
       content: message.content,
       type: message.type,
@@ -119,7 +130,7 @@ export async function POST(
     }
 
     // Check if user is attendee or organizer of this event
-    const isAttendee = event.attendees.some((attendee: any) => 
+    const isAttendee = event.attendees.some((attendee: { userId: string }) => 
       attendee.userId?.toString() === user._id.toString()
     );
     const isOrganizer = event.organizerId.toString() === user._id.toString();

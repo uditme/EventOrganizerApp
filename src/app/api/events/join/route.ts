@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user is already an attendee
-    const isAlreadyAttendee = event.attendees.some((attendee: any) => 
+    const isAlreadyAttendee = event.attendees.some((attendee: { userId: string }) => 
       attendee.userId?.toString() === user._id.toString()
     );
 

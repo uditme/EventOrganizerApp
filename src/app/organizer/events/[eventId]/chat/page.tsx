@@ -14,7 +14,6 @@ import {
   Shield,
   Trash2,
   AlertTriangle,
-  Clock,
   Paperclip,
   Image,
   Download
@@ -27,7 +26,7 @@ interface Event {
   date: string;
   location: string;
   eventCode: string;
-  attendees: any[];
+  attendees: { userId: string; name: string; email: string }[];
   organizerId: {
     _id: string;
     name: string;
@@ -54,10 +53,6 @@ export default function OrganizerEventChatPage() {
   const router = useRouter();
   const params = useParams();
   const eventId = params?.eventId as string;
-
-  if (!eventId) {
-    return <div>Loading...</div>;
-  }
   
   const [event, setEvent] = useState<Event | null>(null);
   const [loadingEvent, setLoadingEvent] = useState(true);
@@ -66,7 +61,6 @@ export default function OrganizerEventChatPage() {
   const [isAnnouncement, setIsAnnouncement] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(true);
-  const [currentUserId, setCurrentUserId] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   useEffect(() => {
@@ -209,6 +203,10 @@ export default function OrganizerEventChatPage() {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
+
+  if (!eventId) {
+    return <div>Loading...</div>;
+  }
 
   if (loading || loadingEvent) {
     return (

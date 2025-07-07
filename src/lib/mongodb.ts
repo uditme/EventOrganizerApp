@@ -11,10 +11,10 @@ interface MongooseConnection {
   promise: Promise<mongoose.Connection> | null;
 }
 
-let cached: MongooseConnection = (global as any).mongoose;
+let cached: MongooseConnection = (global as { mongoose?: MongooseConnection }).mongoose || { conn: null, promise: null };
 
 if (!cached) {
-  cached = (global as any).mongoose = { conn: null, promise: null };
+  cached = (global as { mongoose?: MongooseConnection }).mongoose = { conn: null, promise: null };
 }
 
 async function dbConnect(): Promise<mongoose.Connection> {

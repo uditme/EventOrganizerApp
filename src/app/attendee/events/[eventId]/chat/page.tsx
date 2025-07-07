@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { 
   ArrowLeft,
   MessageSquare,
@@ -10,7 +10,6 @@ import {
   Calendar,
   MapPin,
   Send,
-  Smile,
   Settings,
   Paperclip,
   Image,
@@ -25,7 +24,7 @@ interface Event {
   date: string;
   location: string;
   eventCode: string;
-  attendees: any[];
+  attendees: { userId: string; name: string; email: string }[];
   createdAt: string;
 }
 
@@ -47,10 +46,6 @@ export default function AttendeeEventChatPage() {
   const router = useRouter();
   const params = useParams();
   const eventId = params?.eventId as string;
-
-  if (!eventId) {
-    return <div>Loading...</div>;
-  }
   
   const [event, setEvent] = useState<Event | null>(null);
   const [loadingEvent, setLoadingEvent] = useState(true);
@@ -60,16 +55,7 @@ export default function AttendeeEventChatPage() {
   const [loadingMessages, setLoadingMessages] = useState(true);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  useEffect(() => {
-    if (!loading && (!user || userProfile?.role !== 'attendee')) {
-      router.push('/');
-    } else if (user && userProfile?.role === 'attendee' && eventId) {
-      fetchEvent();
-      fetchMessages();
-    }
-  }, [user, userProfile, loading, eventId, router]);
-
-  const fetchEvent = async () => {
+  const fetchEvent = useCallback(async () => {
     try {
       const response = await fetch(`/api/events/${eventId}`, {
         headers: {
@@ -90,7 +76,7 @@ export default function AttendeeEventChatPage() {
         if (userResponse.ok) {
           const userData = await userResponse.json();
           // Check if user is registered for this event by comparing database IDs
-          const isUserRegistered = eventData.attendees.some((attendee: any) => 
+          const isUserRegistered = eventData.attendees.some((attendee: { userId: string; name: string; email: string }) => 
             attendee.userId?.toString() === userData._id
           );
           setIsRegistered(isUserRegistered);
@@ -110,9 +96,9 @@ export default function AttendeeEventChatPage() {
     } finally {
       setLoadingEvent(false);
     }
-  };
+  }, [eventId, user, router]);
 
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     try {
       const response = await fetch(`/api/events/${eventId}/chat`, {
         headers: {
@@ -128,7 +114,16 @@ export default function AttendeeEventChatPage() {
     } finally {
       setLoadingMessages(false);
     }
-  };
+  }, [eventId, user]);
+
+  useEffect(() => {
+    if (!loading && (!user || userProfile?.role !== 'attendee')) {
+      router.push('/');
+    } else if (user && userProfile?.role === 'attendee' && eventId) {
+      fetchEvent();
+      fetchMessages();
+    }
+  }, [user, userProfile, loading, eventId, router, fetchEvent, fetchMessages]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -183,6 +178,10 @@ export default function AttendeeEventChatPage() {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
+
+  if (!eventId) {
+    return <div>Loading...</div>;
+  }
 
   if (loading || loadingEvent) {
     return (

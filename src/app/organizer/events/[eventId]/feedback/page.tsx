@@ -1,16 +1,15 @@
 'use client';
 
 import React from 'react';
-import { useParams } from 'next/navigation';
 
 interface PageProps {
-    params: {
+    params: Promise<{
         eventId: string;
-    };
+    }>;
 }
 
 const OrganizerFeedbackPage = ({ params }: PageProps) => {
-    const { eventId } = params;
+    const { eventId } = React.use(params);
     
     return (
         <div className="min-h-screen bg-gray-50 py-8">

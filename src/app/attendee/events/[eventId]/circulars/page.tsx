@@ -39,8 +39,8 @@ interface Circular {
 export default function AttendeeViewUpdatesPage() {
   const { user, userProfile, loading } = useAuth();
   const router = useRouter();
-  const params = useParams();
-  const eventId = params.eventId as string;
+const params = useParams();
+  const eventId = params?.eventId as string;
   
   const [event, setEvent] = useState<Event | null>(null);
   const [circulars, setCirculars] = useState<Circular[]>([]);

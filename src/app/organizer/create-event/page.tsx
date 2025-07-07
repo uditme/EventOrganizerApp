@@ -64,7 +64,7 @@ const CreateEventPage = memo(function CreateEventPage() {
       });
 
       if (response.ok) {
-        const result = await response.json();
+      await response.json();
         alert('Event created successfully!');
         // Clear form
         setFormData({ name: '', description: '', date: '', location: '' });

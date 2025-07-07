@@ -12,10 +12,9 @@ export async function POST(request: NextRequest) {
 
     const token = authorization.split('Bearer ')[1];
     
-    let decodedToken;
     try {
       const auth = getFirebaseAuth();
-      decodedToken = await auth.verifyIdToken(token);
+      await auth.verifyIdToken(token);
     } catch (error) {
       console.error('Firebase token verification error:', error);
       return NextResponse.json({ error: 'Invalid token or Firebase not configured' }, { status: 401 });

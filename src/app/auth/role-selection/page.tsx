@@ -2,11 +2,11 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import Loading from '@/components/Loading';
 import { GoogleIcon } from '@/components/icons/GoogleIcon';
 
-export default function RoleSelectionPage() {
+function RoleSelectionContent() {
   const { user, userProfile, signInWithGoogle, setUserRole, loading, clearUserProfile } = useAuth();
   const [selectedRole, setSelectedRole] = useState<'organizer' | 'attendee' | null>(null);
   const [isRoleSwitching, setIsRoleSwitching] = useState(false);
@@ -14,7 +14,7 @@ export default function RoleSelectionPage() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const roleParam = searchParams.get('role');
+    const roleParam = searchParams?.get('role');
     if (roleParam === 'organizer' || roleParam === 'attendee') {
       setSelectedRole(roleParam);
     }
@@ -23,7 +23,7 @@ export default function RoleSelectionPage() {
   useEffect(() => {
     if (user && userProfile && userProfile.role && !isRoleSwitching) {
       // User is already authenticated and has a role, but not switching roles
-      const urlRole = searchParams.get('role');
+      const urlRole = searchParams?.get('role');
       if (!urlRole || urlRole === userProfile.role) {
         // No role specified in URL or same role, redirect to dashboard
         if (userProfile.role === 'organizer') {
@@ -132,5 +132,13 @@ export default function RoleSelectionPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function RoleSelectionPage() {
+  return (
+    <Suspense fallback={<Loading text="Loading page..." fullScreen />}>
+      <RoleSelectionContent />
+    </Suspense>
   );
 }

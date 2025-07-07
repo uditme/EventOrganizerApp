@@ -71,7 +71,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 updatedAt: new Date()
               };
               localStorage.setItem('userProfile', JSON.stringify(tempProfile));
-              setUserProfile(tempProfile as any);
+              setUserProfile(tempProfile as unknown as IUser);
             }
           }
         } catch (error) {
@@ -100,7 +100,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               updatedAt: new Date()
             };
             localStorage.setItem('userProfile', JSON.stringify(tempProfile));
-            setUserProfile(tempProfile as any);
+            setUserProfile(tempProfile as unknown as IUser);
           }
         }
       } else {
@@ -153,7 +153,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             updatedAt: new Date()
           };
           localStorage.setItem('userProfile', JSON.stringify(tempProfile));
-          setUserProfile(tempProfile as any);
+          setUserProfile(tempProfile as unknown as IUser);
         }
       } catch (error) {
         console.error('Error with backend auth:', error);
@@ -169,7 +169,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           updatedAt: new Date()
         };
         localStorage.setItem('userProfile', JSON.stringify(tempProfile));
-        setUserProfile(tempProfile as any);
+        setUserProfile(tempProfile as unknown as IUser);
       }
     } catch (error) {
       console.error('Error signing in with Google:', error);

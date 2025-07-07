@@ -38,7 +38,7 @@ export default function ManageEventPage() {
   const { user, userProfile, loading } = useAuth();
   const router = useRouter();
   const params = useParams();
-  const eventId = params.eventId as string;
+  const eventId = params?.eventId as string;
   
   const [event, setEvent] = useState<Event | null>(null);
   const [attendees, setAttendees] = useState<Attendee[]>([]);

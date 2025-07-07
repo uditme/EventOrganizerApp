@@ -44,7 +44,7 @@ export async function GET(
     }
 
     // Format attendees data
-    const attendees = event.attendees.map((attendee: any) => ({
+    const attendees = event.attendees.map((attendee: { userId: { _id: string; name: string; email: string }; joinedAt: Date }) => ({
       _id: attendee.userId._id,
       name: attendee.userId.name,
       email: attendee.userId.email,
