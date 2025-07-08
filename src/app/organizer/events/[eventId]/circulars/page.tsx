@@ -45,6 +45,8 @@ export default function SendCircularsPage() {
   const [isSending, setIsSending] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const [recordingTimer, setRecordingTimer] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (!loading && (!user || userProfile?.role !== 'organizer')) {
@@ -112,11 +114,30 @@ export default function SendCircularsPage() {
         console.log('Audio blob created with size:', blob.size);
         setAudioBlob(blob);
         stream.getTracks().forEach(track => track.stop());
+        if (recordingTimer) {
+          clearInterval(recordingTimer);
+          setRecordingTimer(null);
+        }
+        setRecordingTime(0);
       };
 
       setMediaRecorder(recorder);
       recorder.start(1000); // Record in 1-second chunks
       setIsRecording(true);
+      setRecordingTime(0);
+      
+      // Start timer and auto-stop at 60 seconds
+      const timer = setInterval(() => {
+        setRecordingTime(prev => {
+          const newTime = prev + 1;
+          if (newTime >= 60) {
+            stopRecording();
+            return 60;
+          }
+          return newTime;
+        });
+      }, 1000);
+      setRecordingTimer(timer);
     } catch (error) {
       console.error('Error starting recording:', error);
       alert('Failed to start recording. Please check your microphone permissions.');
@@ -127,6 +148,10 @@ export default function SendCircularsPage() {
     if (mediaRecorder && mediaRecorder.state === 'recording') {
       mediaRecorder.stop();
       setIsRecording(false);
+    }
+    if (recordingTimer) {
+      clearInterval(recordingTimer);
+      setRecordingTimer(null);
     }
   };
 
@@ -314,7 +339,8 @@ export default function SendCircularsPage() {
                 {!isRecording && !audioBlob && (
                   <div>
                     <Mic className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600 mb-4">Click to start recording your voice message</p>
+                    <p className="text-gray-600 mb-2">Click to start recording your voice message</p>
+                    <p className="text-sm text-gray-500 mb-4">Maximum recording time: 1 minute</p>
                     <button
                       onClick={startRecording}
                       className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2 mx-auto"
@@ -330,7 +356,16 @@ export default function SendCircularsPage() {
                     <div className="animate-pulse">
                       <Mic className="h-16 w-16 text-red-600 mx-auto mb-4" />
                     </div>
-                    <p className="text-red-600 mb-4 font-medium">Recording in progress...</p>
+                    <p className="text-red-600 mb-2 font-medium">Recording in progress...</p>
+                    <p className="text-lg font-mono mb-4">
+                      {Math.floor(recordingTime / 60)}:{(recordingTime % 60).toString().padStart(2, '0')} / 1:00
+                    </p>
+                    <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+                      <div 
+                        className="bg-red-600 h-2 rounded-full transition-all duration-1000" 
+                        style={{ width: `${(recordingTime / 60) * 100}%` }}
+                      ></div>
+                    </div>
                     <button
                       onClick={stopRecording}
                       className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors flex items-center space-x-2 mx-auto"
