@@ -96,21 +96,26 @@ export default function SendCircularsPage() {
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
+      const recorder = new MediaRecorder(stream, {
+        mimeType: 'audio/webm;codecs=opus'
+      });
       const chunks: BlobPart[] = [];
 
       recorder.ondataavailable = (e) => {
-        chunks.push(e.data);
+        if (e.data.size > 0) {
+          chunks.push(e.data);
+        }
       };
 
       recorder.onstop = () => {
-        const blob = new Blob(chunks, { type: 'audio/wav' });
+        const blob = new Blob(chunks, { type: 'audio/webm;codecs=opus' });
+        console.log('Audio blob created with size:', blob.size);
         setAudioBlob(blob);
         stream.getTracks().forEach(track => track.stop());
       };
 
       setMediaRecorder(recorder);
-      recorder.start();
+      recorder.start(1000); // Record in 1-second chunks
       setIsRecording(true);
     } catch (error) {
       console.error('Error starting recording:', error);
@@ -159,13 +164,23 @@ export default function SendCircularsPage() {
   };
 
   const sendVoiceMessage = async () => {
-    if (!audioBlob) return;
+    if (!audioBlob) {
+      alert('No audio recorded. Please record a voice message first.');
+      return;
+    }
+
+    if (audioBlob.size === 0) {
+      alert('Audio recording is empty. Please try recording again.');
+      return;
+    }
 
     setIsSending(true);
     try {
       const formData = new FormData();
       formData.append('type', 'voice');
-      formData.append('audio', audioBlob, 'voice-message.wav');
+      formData.append('audio', audioBlob, 'voice-message.webm');
+
+      console.log('Sending audio blob with size:', audioBlob.size);
 
       const response = await fetch(`/api/events/${eventId}/circulars`, {
         method: 'POST',
@@ -276,7 +291,7 @@ export default function SendCircularsPage() {
                 onChange={(e) => setTextMessage(e.target.value)}
                 placeholder="Type your message to all attendees..."
                 rows={6}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
               />
               <div className="flex justify-between items-center mt-4">
                 <p className="text-sm text-gray-500">
@@ -393,6 +408,7 @@ export default function SendCircularsPage() {
                     ) : (
                       <div className="flex items-center space-x-2">
                         <audio controls className="w-full max-w-md">
+                          <source src={circular.audioUrl} type="audio/webm" />
                           <source src={circular.audioUrl} type="audio/wav" />
                           Your browser does not support the audio element.
                         </audio>
