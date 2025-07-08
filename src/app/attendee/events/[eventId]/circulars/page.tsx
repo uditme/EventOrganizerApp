@@ -224,9 +224,7 @@ const params = useParams();
                           <Mic className="h-5 w-5 text-blue-600" />
                           <span className="text-sm text-blue-700 font-medium">Voice Message</span>
                         </div>
-                        <audio controls className="w-full mt-3">
-                          <source src={circular.audioUrl} type="audio/webm" />
-                          <source src={circular.audioUrl} type="audio/wav" />
+                        <audio controls className="w-full mt-3" src={circular.audioUrl}>
                           Your browser does not support the audio element.
                         </audio>
                       </div>

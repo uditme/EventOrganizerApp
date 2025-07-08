@@ -407,9 +407,7 @@ export default function SendCircularsPage() {
                       <p className="text-gray-700">{circular.content}</p>
                     ) : (
                       <div className="flex items-center space-x-2">
-                        <audio controls className="w-full max-w-md">
-                          <source src={circular.audioUrl} type="audio/webm" />
-                          <source src={circular.audioUrl} type="audio/wav" />
+                        <audio controls className="w-full max-w-md" src={circular.audioUrl}>
                           Your browser does not support the audio element.
                         </audio>
                       </div>
